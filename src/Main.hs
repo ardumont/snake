@@ -7,7 +7,9 @@ import           ActionKid
 import           ActionKid.Utils
 import           Control.Lens
 import           Control.Monad.State
+import           Data.List           (elemIndex)
 import           Data.Monoid         ((<>))
+import           System.Random
 
 data Direction = DirUp | DirDown | DirLeft | DirRight deriving (Show, Eq)
 
@@ -27,7 +29,6 @@ data Direction = DirUp | DirDown | DirLeft | DirRight deriving (Show, Eq)
 -- Every constructor must have `Attributes` as it's last field.
 data Snake = Snake { _direction :: Direction, _sa :: Attributes }
 data Apple = Apple { _aa :: Attributes }
-
 
 -- Ok, you have a Snake type. Now before you can use it in your game,
 -- make it an instance of MovieClip. You can do this automatically with
@@ -77,10 +78,10 @@ makeLenses ''GameState
 -- http://hackage.haskell.org/package/gloss-1.8.2.2/docs/Graphics-Gloss-Data-Picture.html
 
 instance Renderable Snake where
-    render p = color red $ box 50 50
+    render p = color green $ box 50 50
 
 instance Renderable Apple where
-    render p = color green $ circle 10
+    render p = color red $ box 20 20
 
 -- Here we are just rendering the snake as a grey box. With ActionKid,
 -- you can also use an image from your computer instead:
@@ -91,7 +92,7 @@ instance Renderable Apple where
 -- To do that, use the `display` function. `display` will render
 -- the snake at the right x and y coordinates.
 instance Renderable GameState where
-    render gs = display (_snake gs) <> display (_apple gs)
+    render gs = display (_apple gs) <> display (_snake gs)
 
 -- If the game state has multiple items, you can render them all by
 -- concatenating them:
@@ -106,11 +107,11 @@ instance Renderable GameState where
 -- So this creates the game state with a snake in it. Both have default
 -- attributes.
 
-apple_def :: Attributes
-apple_def = Attributes 100.0 100.0 1.0 1.0 True 2
+initGameState :: Snake -> Apple -> GameState
+initGameState s a = GameState s a def
 
-gameState :: GameState
-gameState = (GameState (Snake DirDown def) (Apple apple_def) def)
+-- defaultGameState :: GameState
+-- defaultGameState = initGameState (Snake DirDown def) (Apple $ apple_def 100 100)
 
 -- All of the core game logic takes place in this monad transformer stack.
 -- The State is the default game state we just made.
@@ -127,7 +128,7 @@ type GameMonad a = StateT GameState IO a
 --
 -- The event handler listens for user input, and moves the snake etc.
 -- The game loop is where the rest of the logic happens: firing bullets,
--- hitting an enemy, animations etc etc.
+-- hitting an enemy, ani mations etc etc.
 --------------------------------------------------------------------------
 --------------------------------------------------------------------------
 
@@ -140,15 +141,39 @@ eventHandler (EventKey (SpecialKey KeyUp) Down _ _) = snake.direction .= DirUp
 eventHandler (EventKey (SpecialKey KeyDown) Down _ _) = snake.direction .= DirDown
 eventHandler _ = return ()
 
+world_dim :: Float
+world_dim = 1000
+
+snake_speed :: Num a => a
+snake_speed = 10
+
 runForEver :: Float -> GameMonad ()
 runForEver _ = do
   gs <- get
   case gs ^. snake . direction of
-    DirUp -> snake.y += 10
-    DirRight -> snake.x += 10
-    DirDown -> snake.y -= 10
-    DirLeft -> snake.x -= 10
+    DirUp -> snake.y += snake_speed
+    DirRight -> snake.x += snake_speed
+    DirDown -> snake.y -= snake_speed
+    DirLeft -> snake.x -= snake_speed
   return ()
+
+myRandom :: Int -> Float -> Float -> IO [Float]
+myRandom n min max = do
+  g <- getStdGen
+  return $ take n (randomRs (min, max) g :: [Float])
+
+toDirection :: (Eq a, Num a) => a -> Direction
+toDirection 1 = DirUp
+toDirection 2 = DirRight
+toDirection 3 = DirDown
+toDirection 4 = DirLeft
+toDirection _ = undefined
+
+snake_def :: Float -> Float -> Attributes
+snake_def x y = Attributes x y 1.0 1.0 True 1
+
+apple_def :: Float -> Float -> Attributes
+apple_def x y = Attributes x y 1.0 1.0 True 2
 
 -- Now lets run the game! The run function takes:
 -- 1. the title for the window of the game
@@ -157,4 +182,9 @@ runForEver _ = do
 -- 4. the eventHandler function
 -- 5. the main loop function
 main :: IO ()
-main = run "Snake" (500, 500) gameState eventHandler runForEver
+main = do
+  rndPos <- myRandom 4 1 world_dim
+  rndDirection <- myRandom 1 1 4
+  let snake = (Snake ((toDirection . round . (!! 0)) rndDirection) (snake_def (rndPos!!0) (rndPos!!1)))
+  let apple = Apple $ apple_def (rndPos!!2) (rndPos!!3)
+  run "Snake" (round(world_dim), round(world_dim)) (initGameState snake apple) eventHandler runForEver
