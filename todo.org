@@ -1,7 +1,7 @@
 #+title: todo
 #+author: ardumont
 
-* IN-PROGRESS 0.0.1
+* IN-PROGRESS 0.0.1 [7/11]
 - [X] bootstrap
 - [X] cabal dependency install
 - [X] Display a dummy snake and apple
@@ -10,8 +10,10 @@
 - [X] Random snake position at startup
 - [X] Random direction at startup
 - [ ] Snake eats apple creates a new apple
-- [ ] Bound snake's movement or make snake circular
+- [ ] Snake eats apple make it grow
+- [ ] Bound snake's movement to the world
+- [ ] Make the world boundless
 
-* 0.0.2
+* TODO 0.0.2
 - [ ] Initial random wall
 - [ ] Improve snake + apple rendering
