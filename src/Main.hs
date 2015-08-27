@@ -7,8 +7,9 @@ import           ActionKid
 import           ActionKid.Utils
 import           Control.Lens
 import           Control.Monad.State
-import           Data.List           (elemIndex)
-import           Data.Monoid         ((<>))
+import           Data.List                 (elemIndex)
+import           Data.Monoid               ((<>))
+import           Graphics.Gloss.Data.Color
 import           System.Random
 
 data Direction = DirUp | DirDown | DirLeft | DirRight deriving (Show, Eq)
@@ -77,11 +78,29 @@ makeLenses ''GameState
 --
 -- http://hackage.haskell.org/package/gloss-1.8.2.2/docs/Graphics-Gloss-Data-Picture.html
 
+world_dim :: Float
+world_dim = 1000
+
+snake_speed :: Num a => a
+snake_speed = 10
+
+snake_color :: Color
+snake_color = dark green
+
+apple_color :: Color
+apple_color = red
+
+snake_size :: Num a => a
+snake_size = 50
+
+apple_size :: Num a => a
+apple_size = 20
+
 instance Renderable Snake where
-    render p = color green $ box 50 50
+    render p = color snake_color $ box snake_size snake_size
 
 instance Renderable Apple where
-    render p = color red $ box 20 20
+    render p = color apple_color $ box apple_size apple_size
 
 -- Here we are just rendering the snake as a grey box. With ActionKid,
 -- you can also use an image from your computer instead:
@@ -141,12 +160,6 @@ eventHandler (EventKey (SpecialKey KeyUp) Down _ _) = snake.direction .= DirUp
 eventHandler (EventKey (SpecialKey KeyDown) Down _ _) = snake.direction .= DirDown
 eventHandler _ = return ()
 
-world_dim :: Float
-world_dim = 1000
-
-snake_speed :: Num a => a
-snake_speed = 10
-
 runForEver :: Float -> GameMonad ()
 runForEver _ = do
   gs <- get
@@ -192,8 +205,8 @@ initSnake rndDir rndPos = Snake dir (snakeDef x y)
 -- | Initialize an apple's start position given an array of random position
 initApple :: [Float] -> Apple
 initApple rndPos = Apple $ appleDef x y
-  where x = rndPos!!2
-        y = rndPos!!3
+  where x = rndPos!!0
+        y = rndPos!!1
 
 -- Now lets run the game! The run function takes:
 -- 1. the title for the window of the game
@@ -203,9 +216,10 @@ initApple rndPos = Apple $ appleDef x y
 -- 5. the main loop function
 main :: IO ()
 main = do
-  rndPosition <- myRandom 4 1 world_dim
+  rndPosApple <- myRandom 2 1 world_dim
+  rndPosSnake <- myRandom 2 1 world_dim
   rndDirection <- myRandom 1 1 4
-  let snake = initSnake rndDirection rndPosition
-  let apple = initApple rndPosition
+  let snake = initSnake rndDirection rndPosSnake
+  let apple = initApple rndPosApple
   run "Snake" (dim, dim) (initGameState snake apple) eventHandler runForEver
   where dim = round(world_dim)
