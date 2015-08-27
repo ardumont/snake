@@ -163,11 +163,21 @@ eventHandler _ = return ()
 runForEver :: Float -> GameMonad ()
 runForEver _ = do
   gs <- get
+  -- progress according to direction
   case gs ^. snake . direction of
     DirUp -> snake.y += snake_speed
     DirRight -> snake.x += snake_speed
     DirDown -> snake.y -= snake_speed
     DirLeft -> snake.x -= snake_speed
+  -- if out of world, gets back the other side
+  when (gs ^. snake.x < 0) $ do
+     snake.x .= world_dim
+  when (gs ^. snake.x > world_dim) $ do
+     snake.x .= 0
+  when (gs ^. snake.y < 0) $ do
+     snake.y .= world_dim
+  when (gs ^. snake.y > world_dim) $ do
+     snake.y .= 0
   return ()
 
 myRandom :: Int -> Float -> Float -> IO [Float]
