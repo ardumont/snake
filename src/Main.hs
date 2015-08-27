@@ -111,7 +111,7 @@ initGameState :: Snake -> Apple -> GameState
 initGameState s a = GameState s a def
 
 -- defaultGameState :: GameState
--- defaultGameState = initGameState (Snake DirDown def) (Apple $ apple_def 100 100)
+-- defaultGameState = initGameState (Snake DirDown def) (Apple $ appleDef 100 100)
 
 -- All of the core game logic takes place in this monad transformer stack.
 -- The State is the default game state we just made.
@@ -169,11 +169,31 @@ toDirection 3 = DirDown
 toDirection 4 = DirLeft
 toDirection _ = undefined
 
-snake_def :: Float -> Float -> Attributes
-snake_def x y = Attributes x y 1.0 1.0 True 1
+-- | Initialize entity's default attributes
+entityAttributesDef :: Int -> Float -> Float -> Attributes
+entityAttributesDef index x y = Attributes x y 1.0 1.0 True index
 
-apple_def :: Float -> Float -> Attributes
-apple_def x y = Attributes x y 1.0 1.0 True 2
+-- | Initialize Snake's attributes
+snakeDef :: Float -> Float -> Attributes
+snakeDef = entityAttributesDef 1
+
+-- | Initialize Apple's attributes
+appleDef :: Float -> Float -> Attributes
+appleDef = entityAttributesDef 2
+
+-- | Initialize a snake's start position and direction given 2 arrays of random
+-- values.
+initSnake :: [Float] -> [Float] -> Snake
+initSnake rndDir rndPos = Snake dir (snakeDef x y)
+  where x = rndPos!!0
+        y = rndPos!!1
+        dir = toDirection . round . (!! 0) $ rndDir
+
+-- | Initialize an apple's start position given an array of random position
+initApple :: [Float] -> Apple
+initApple rndPos = Apple $ appleDef x y
+  where x = rndPos!!2
+        y = rndPos!!3
 
 -- Now lets run the game! The run function takes:
 -- 1. the title for the window of the game
@@ -183,8 +203,9 @@ apple_def x y = Attributes x y 1.0 1.0 True 2
 -- 5. the main loop function
 main :: IO ()
 main = do
-  rndPos <- myRandom 4 1 world_dim
+  rndPosition <- myRandom 4 1 world_dim
   rndDirection <- myRandom 1 1 4
-  let snake = (Snake ((toDirection . round . (!! 0)) rndDirection) (snake_def (rndPos!!0) (rndPos!!1)))
-  let apple = Apple $ apple_def (rndPos!!2) (rndPos!!3)
-  run "Snake" (round(world_dim), round(world_dim)) (initGameState snake apple) eventHandler runForEver
+  let snake = initSnake rndDirection rndPosition
+  let apple = initApple rndPosition
+  run "Snake" (dim, dim) (initGameState snake apple) eventHandler runForEver
+  where dim = round(world_dim)
