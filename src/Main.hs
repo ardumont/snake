@@ -78,29 +78,31 @@ makeLenses ''GameState
 --
 -- http://hackage.haskell.org/package/gloss-1.8.2.2/docs/Graphics-Gloss-Data-Picture.html
 
-world_dim :: Float
-world_dim = 1000
+worldDim :: Float
+worldDim = 1000
 
-snake_speed :: Num a => a
-snake_speed = 10
+snakeSpeed :: Num a => a
+snakeSpeed = 10
 
-snake_color :: Color
-snake_color = dark green
+snakeColor :: Color
+snakeColor = dark green
 
-apple_color :: Color
-apple_color = red
+appleColor :: Color
+appleColor = red
 
-snake_size :: Num a => a
-snake_size = 50
+snakeWidth, snakeHeight :: Num a => a
+snakeWidth = 10
+snakeHeight = 10
 
-apple_size :: Num a => a
-apple_size = 20
+appleWidth, appleHeight :: Num a => a
+appleWidth = 10
+appleHeight = 10
 
 instance Renderable Snake where
-    render p = color snake_color $ box snake_size snake_size
+    render p = color snakeColor $ box snakeWidth snakeHeight
 
 instance Renderable Apple where
-    render p = color apple_color $ box apple_size apple_size
+    render p = color appleColor $ box appleWidth appleHeight
 
 -- Here we are just rendering the snake as a grey box. With ActionKid,
 -- you can also use an image from your computer instead:
@@ -126,11 +128,13 @@ instance Renderable GameState where
 -- So this creates the game state with a snake in it. Both have default
 -- attributes.
 
+-- | Initialize the game's state with a snake and an apple
+-- the rnd is an infinite array of float used for `random` position
 initGameState :: Snake -> Apple -> GameState
 initGameState s a = GameState s a def
 
--- defaultGameState :: GameState
--- defaultGameState = initGameState (Snake DirDown def) (Apple $ appleDef 100 100)
+defaultGameState :: GameState
+defaultGameState = initGameState (Snake DirDown def) (Apple $ appleDef 100 100)
 
 -- All of the core game logic takes place in this monad transformer stack.
 -- The State is the default game state we just made.
@@ -160,24 +164,42 @@ eventHandler (EventKey (SpecialKey KeyUp) Down _ _) = snake.direction .= DirUp
 eventHandler (EventKey (SpecialKey KeyDown) Down _ _) = snake.direction .= DirDown
 eventHandler _ = return ()
 
+-- type GameMonad a = StateT GameState IO a
+-- get :: MonadState s m => m s
+-- (^.) :: s -> Getting a s a -> a
+-- (.=) :: MonadState s m => ASetter s s a b -> b -> m ()
+-- (+=) :: (Num a, MonadState s m) => ASetter' s a -> a -> m ()
+-- (-=) :: (Num a, MonadState s m) => ASetter' s a -> a -> m ()
+
+-- | Move snake according to its direction
+moveSnake :: GameState -> GameMonad ()
+moveSnake gs = case gs ^. snake . direction of
+    DirUp -> snake.y += snakeSpeed
+    DirRight -> snake.x += snakeSpeed
+    DirDown -> snake.y -= snakeSpeed
+    DirLeft -> snake.x -= snakeSpeed
+
+-- | Snake is boundless so gets back the other side every time
+boundlessSnake :: GameState -> GameMonad ()
+boundlessSnake gs = do
+  when (gs ^. snake.x < 0) $ do
+     snake.x .= worldDim
+  when (gs ^. snake.x > worldDim) $ do
+     snake.x .= 0
+  when (gs ^. snake.y < 0) $ do
+     snake.y .= worldDim
+  when (gs ^. snake.y > worldDim) $ do
+     snake.y .= 0
+
+snakeAteApple :: GameState -> GameMonad ()
+snakeAteApple _ = return ()
+
 runForEver :: Float -> GameMonad ()
 runForEver _ = do
   gs <- get
-  -- progress according to direction
-  case gs ^. snake . direction of
-    DirUp -> snake.y += snake_speed
-    DirRight -> snake.x += snake_speed
-    DirDown -> snake.y -= snake_speed
-    DirLeft -> snake.x -= snake_speed
-  -- if out of world, gets back the other side
-  when (gs ^. snake.x < 0) $ do
-     snake.x .= world_dim
-  when (gs ^. snake.x > world_dim) $ do
-     snake.x .= 0
-  when (gs ^. snake.y < 0) $ do
-     snake.y .= world_dim
-  when (gs ^. snake.y > world_dim) $ do
-     snake.y .= 0
+  moveSnake gs
+  boundlessSnake gs
+  snakeAteApple gs
   return ()
 
 myRandom :: Int -> Float -> Float -> IO [Float]
@@ -226,10 +248,10 @@ initApple rndPos = Apple $ appleDef x y
 -- 5. the main loop function
 main :: IO ()
 main = do
-  rndPosApple <- myRandom 2 1 world_dim
-  rndPosSnake <- myRandom 2 1 world_dim
+  rndPosApple <- myRandom 2 1 worldDim
+  rndPosSnake <- myRandom 2 1 worldDim
   rndDirection <- myRandom 1 1 4
   let snake = initSnake rndDirection rndPosSnake
   let apple = initApple rndPosApple
   run "Snake" (dim, dim) (initGameState snake apple) eventHandler runForEver
-  where dim = round(world_dim)
+  where dim = round(worldDim)
