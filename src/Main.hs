@@ -251,7 +251,7 @@ main = do
   rndPosApple <- myRandom 2 1 worldDim
   rndPosSnake <- myRandom 2 1 worldDim
   rndDirection <- myRandom 1 1 4
-  let snake = initSnake rndDirection rndPosSnake
-  let apple = initApple rndPosApple
-  run "Snake" (dim, dim) (initGameState snake apple) eventHandler runForEver
+  let snakeStart = initSnake rndDirection rndPosSnake
+      appleStart = initApple rndPosApple
+  run "Snake" (dim, dim) (initGameState snakeStart appleStart) eventHandler runForEver
   where dim = round(worldDim)
