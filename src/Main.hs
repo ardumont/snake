@@ -179,7 +179,23 @@ moveSnake gs = case gs ^. snake . direction of
     DirDown -> snake.y -= snakeSpeed
     DirLeft -> snake.x -= snakeSpeed
 
+-- | Compute the new coordinate according to actual ones
+boundlessSnakePure :: (Num t, Ord t) => t -> t -> t -> (t, t)
+boundlessSnakePure x y limit = case (x < 0, x > limit, y < 0, y > limit) of
+                                  (True, _, _, _ ) -> (limit, y)
+                                  (_, True, _, _)  -> (0, y)
+                                  (_, _, True, _)  -> (x, limit)
+                                  (_, _, _, True)  -> (x, 0)
+                                  _                -> (x, y)
+
 -- | Snake is boundless so gets back the other side every time
+-- not working...
+boundlessSnake' :: GameState -> GameMonad ()
+boundlessSnake' gs =
+   let (newX, newY) = boundlessSnakePure (gs ^. snake . x) (gs ^. snake . y) worldDim
+   in do snake . x .= newX
+         snake . y .= newY
+
 boundlessSnake :: GameState -> GameMonad ()
 boundlessSnake gs = do
   when (gs ^. snake.x < 0) $ do
