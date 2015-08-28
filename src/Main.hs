@@ -82,7 +82,7 @@ worldDim :: Float
 worldDim = 1000
 
 snakeSpeed :: Num a => a
-snakeSpeed = 10
+snakeSpeed = 5
 
 snakeColor :: Color
 snakeColor = dark green
@@ -91,12 +91,12 @@ appleColor :: Color
 appleColor = red
 
 snakeWidth, snakeHeight :: Num a => a
-snakeWidth = 10
-snakeHeight = 10
+snakeWidth = 1
+snakeHeight = 1
 
 appleWidth, appleHeight :: Num a => a
-appleWidth = 10
-appleHeight = 10
+appleWidth = 1
+appleHeight = 1
 
 instance Renderable Snake where
     render p = color snakeColor $ box snakeWidth snakeHeight
@@ -216,7 +216,7 @@ toDirection _ = undefined
 
 -- | Initialize entity's default attributes
 entityAttributesDef :: Int -> Float -> Float -> Attributes
-entityAttributesDef index x y = Attributes x y 1.0 1.0 True index
+entityAttributesDef index x y = Attributes x y 10.0 10.0 True index
 
 -- | Initialize Snake's attributes
 snakeDef :: Float -> Float -> Attributes
