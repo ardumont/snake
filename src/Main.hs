@@ -133,9 +133,6 @@ instance Renderable GameState where
 initGameState :: Snake -> Apple -> GameState
 initGameState s a = GameState s a def
 
-defaultGameState :: GameState
-defaultGameState = initGameState (Snake DirDown def) (Apple $ appleDef 100 100)
-
 -- All of the core game logic takes place in this monad transformer stack.
 -- The State is the default game state we just made.
 type GameMonad a = StateT GameState IO a
@@ -207,8 +204,38 @@ boundlessSnake gs = do
   when (gs ^. snake.y > worldDim) $ do
      snake.y .= 0
 
+defaultGameState :: GameState
+defaultGameState = initGameState (Snake DirDown def) (Apple $ appleDef 100 100)
+
+-- snakeAteApple
+-- direction up:    (xa <= xs && xs <= xa + wa || xa <= xs + ws && xs + ws <= xa + wa) && ya <= ys + hs && ys + hs <= ya + ha
+-- direction right: xa <= xs + ws && xs + ws <= xa + wa && ((ya <= ys && ys <= ya + ha) || (ya <= ys + hs && ys + hs <= ya + ha))
+-- direction down:  (xa <= xs && xs <= xa + wa || xa <= xs + ws && xs + ws <= xa + wa) && ya <= ys && ys <= ya + ha
+-- direction left:  xa <= xs <= xa + wa && ((ya <= ys && ys <= ya + ha) || (ya <= ys + hs && ys + hs <= ya + ha))
+
 snakeAteApple :: GameState -> GameMonad ()
-snakeAteApple _ = return ()
+snakeAteApple gs = let dir = gs ^. snake . direction
+                       xa = gs ^. apple . x
+                       ya = gs ^. apple . y
+                       xs = gs ^. snake . x
+                       ys = gs ^. snake . y
+                       hs = snakeHeight
+                       ws = snakeWidth
+                       ha = appleHeight
+                       wa = appleWidth in
+  case dir of
+    DirUp -> when (((xa <= xs && xs <= xa + wa) || (xa <= xs + ws && xs + ws <= xa + wa)) && (ya <= ys + hs && ys + hs <= ya + ha)) $ do
+      apple . x .= 10
+      apple . y .= 10
+    DirRight -> when (xa <= xs + ws && xs + ws <= xa + wa && ((ya <= ys && ys <= ya + ha) || (ya <= ys + hs && ys + hs <= ya + ha))) $ do
+      apple . x .= 20
+      apple . y .= 20
+    DirDown -> when ((xa <= xs && xs <= xa + wa || xa <= xs + ws && xs + ws <= xa + wa) && ya <= ys && ys <= ya + ha) $ do
+      apple . x .= 30
+      apple . y .= 30
+    DirLeft -> when (xa <= xs && xs <= xa + wa && ((ya <= ys && ys <= ya + ha) || (ya <= ys + hs && ys + hs <= ya + ha))) $ do
+      apple . x .= 40
+      apple . y .= 40
 
 runForEver :: Float -> GameMonad ()
 runForEver _ = do
