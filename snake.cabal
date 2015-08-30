@@ -55,7 +55,7 @@ library
                      , lens
                      , mtl
                      , random
-                     -- , gloss
+                     , gloss
                      -- , gloss-juicy
                      -- , gloss-game
   default-language:    Haskell2010
