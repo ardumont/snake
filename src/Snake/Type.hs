@@ -3,7 +3,7 @@ module Snake.Type where
 import           Control.Lens
 
 -- | Entities have coordinates
-type Coord = Point
+data Coord = Coord Int Int
 
 -- | Apple
 data Apple = Apple { _coorda :: Coord }
@@ -17,4 +17,4 @@ data Snake = Snake { _direction :: Direction, _coords :: Coord }
 data Direction = DirUp | DirRight | DirDown | DirLeft
 
 -- | World has limits
-type Limit = Limit Int Int
+data Limit = Limit Int Int

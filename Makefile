@@ -1,16 +1,10 @@
-destroy:
-	cabal sandbox delete
-
-init:
-	cabal sandbox init
-
-install:
-	nix-shell --command "cabal install"
-
 run:
-	cabal run
+	stack exec snake-exe
 
-all: install run
+build:
+	stack build
 
-spec: install
-	cabal spec
+all: build run
+
+spec:
+	stack test

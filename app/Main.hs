@@ -2,6 +2,8 @@
 {-# OPTIONS_GHC -fno-full-laziness -fno-cse #-}
 module Main where
 
+import           Lib
+
 import           Snake.Move
 import           Snake.Type
 
