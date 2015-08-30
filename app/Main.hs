@@ -10,12 +10,24 @@ height :: Float
 height = 1000
 
 applePix :: Picture
-applePix = bmp "resources/slime.bmp"
+applePix = bmp "resources/apple.bmp"
 
 snakePix :: Picture
 snakePix = bmp "resources/snake.bmp"
 
 data World = World Snake Apple Limit
+
+-- | Snake moves in the world
+nextMoveWorld :: t -> World -> World
+nextMoveWorld _ (World (Snake dir coord) apple limit) =
+  World updatedSnake apple limit
+  where updatedSnake = Snake dir (nextMove dir coord)
+
+-- | Snake runs forever and cycle around the world
+circularSnakeWorld :: t -> World -> World
+circularSnakeWorld _ (World (Snake dir coord) apple limit) =
+  World updatedSnake apple limit
+  where updatedSnake = Snake dir (circularSnake coord limit)
 
 -- data example
 -- apple_1 :: Apple
@@ -38,7 +50,7 @@ data World = World Snake Apple Limit
 --      -> IO ()
 
 main :: IO ()
-main = play (InWindow "Snake" (w, h) (50, 50)) white 30 world drawWorld handle []
+main = play (InWindow "Snake" (w, h) (50, 50)) white 30 world drawWorld handle [ nextMoveWorld, circularSnakeWorld ]
        where snake = Snake DirUp (Coord 0 0)
              apple = Apple (Coord 10 10)
              world = World snake apple (Limit width height)
