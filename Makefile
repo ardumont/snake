@@ -4,11 +4,8 @@ destroy:
 init:
 	cabal sandbox init
 
-deps:
-	cabal sandbox add-source deps-src/actionkid
-
 install:
-	nix-shell --command 'cabal install'
+	nix-shell --command "cabal install"
 
 run:
 	cabal run

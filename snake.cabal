@@ -60,7 +60,7 @@ executable snake
   -- other-extensions:    
   
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.8, ActionKid, lens, mtl, random, gloss
+  build-depends:       base >=4.8, lens, mtl, random, gloss, gloss-juicy, gloss-game
   
   -- Directories containing source files.
   hs-source-dirs:      src
