@@ -29,13 +29,16 @@ circularSnakeWorld _ (World (Snake dir coord) apple limit) =
   World updatedSnake apple limit
   where updatedSnake = Snake dir (circularSnake coord limit)
 
+-- | Compute the apple's next position
+nextApplePosition :: Apple -> Apple
+nextApplePosition (Apple (Coord x y)) = (Apple $ Coord (x+10) (y+10))
+
 -- | Snake eats apple
 snakeEatsApple :: t -> World -> World
-snakeEatsApple _ world = undefined
-
--- This starts our game in a window with a give size, running at 30 frames per second.
--- The argument 'World (0, 0)' is the initial state of our game world, where our character is at the centre of the
--- window.
+snakeEatsApple _ world@(World snake apple limit) =
+  if (collision snake apple)
+  then (World snake (nextApplePosition apple) limit)
+  else world
 
 -- play
 --   :: Display
@@ -49,27 +52,24 @@ snakeEatsApple _ world = undefined
 
 main :: IO ()
 main = play (InWindow "Snake" (w, h) (0, 0)) -- Window display
-         white                               -- Color
-         100                                 -- frame per second
-         world                               --
-         drawWorld                           -- draw the world function
-         handleUserInput                     -- Handle user input
-         [ nextMoveWorld,                    -- snake moves
-           circularSnakeWorld,               -- can move out of bounds
-           snakeEatsApple                    -- snake eats apple
-         ]
-       where snake = Snake DirRight (Coord 0 0)
-             apple = Apple (Coord 100 100)
+            white                               -- Color
+            100                                 -- frame per second
+            world                               --
+            drawWorld                           -- draw the world function
+            handleUserInput                     -- Handle user input
+            [ nextMoveWorld,                    -- snake moves
+              circularSnakeWorld,               -- can move out of bounds
+              snakeEatsApple                    -- snake eats apple
+            ]
+       where snake = Snake DirRight (Coord 0 0)  -- FIXME randomly set the snake's direction + initial position
+             apple = Apple (Coord 100 100)       -- FIXME random set the apple's position
              world = World snake apple (Limit width height)
              w = round width
              h = round height
 
--- To draw a frame, we position the character sprite at the location as determined by the current state of the world.
--- We shrink the sprite by 50%.
-
 -- | Draw the pix at coordinates
 drawCoordinates :: Coord -> Picture -> Picture
-drawCoordinates (Coord x y) pix = translate x y (scale 1 1 pix)
+drawCoordinates (Coord x y) pix = translate x y (scale 0.25 0.25 pix)
 
 -- | Draw the world
 drawWorld :: World -> Picture

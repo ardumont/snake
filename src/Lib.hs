@@ -38,8 +38,8 @@ circularSnake (Coord x y) (Limit w h) =
      _                -> Coord x y
 
 -- | Given two sets of coordinates, determine if there is a collision or not
-collision :: Coord -> Coord -> Bool
-collision = (==)
+collision :: Snake -> Apple -> Bool
+collision (Snake _ cs) (Apple ca) = cs == ca
 
 -- | From random int to direction
 toDirection :: (Eq a, Num a) => a -> Direction
