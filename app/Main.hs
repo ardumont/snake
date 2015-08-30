@@ -67,11 +67,24 @@ drawWorld :: World -> Picture
 drawWorld (World (Snake _ cx) (Apple ca) _) =
   pictures [ drawCoordinates cx snakePix, drawCoordinates ca applePix ]
 
+-- Char :: Char -> Key
+-- SpecialKey :: SpecialKey -> Key
+-- EventKey
+--   :: Key
+--      -> KeyState
+--      -> gloss-1.9.4.1:Graphics.Gloss.Internals.Interface.Backend.Types.Modifiers
+--      -> (Float, Float)
+--      -> Event
+
 -- Whenever any of the keys 'a', 'd', 'w', or 's' have been pushed down, move our character in the corresponding
 -- direction.
-handle :: t -> t1 -> t1
--- handle (EventKey (Char 'a') Down _ _) (World (x, y)) = World (x - 10, y)
--- handle (EventKey (Char 'd') Down _ _) (World (x, y)) = World (x + 10, y)
--- handle (EventKey (Char 'w') Down _ _) (World (x, y)) = World (x, y + 10)
--- handle (EventKey (Char 's') Down _ _) (World (x, y)) = World (x, y - 10)
+handle :: Event -> World -> World
+handle (EventKey (Char 'a') Down _ _) (World (Snake _ c) a l) = World (Snake DirLeft c) a l
+handle (EventKey (Char 'd') Down _ _) (World (Snake _ c) a l) = World (Snake DirRight c) a l
+handle (EventKey (Char 'w') Down _ _) (World (Snake _ c) a l) = World (Snake DirUp c) a l
+handle (EventKey (Char 's') Down _ _) (World (Snake _ c) a l) = World (Snake DirDown c) a l
+handle (EventKey (SpecialKey KeyLeft) Down _ _)  (World (Snake _ c) a l) = World (Snake DirLeft c) a l
+handle (EventKey (SpecialKey KeyRight) Down _ _) (World (Snake _ c) a l) = World (Snake DirRight c) a l
+handle (EventKey (SpecialKey KeyUp) Down _ _)    (World (Snake _ c) a l) = World (Snake DirUp c) a l
+handle (EventKey (SpecialKey KeyDown) Down _ _)  (World (Snake _ c) a l) = World (Snake DirDown c) a l
 handle _ world = world        -- don't change the world in case of any other events
