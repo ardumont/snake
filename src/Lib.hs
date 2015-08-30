@@ -1,37 +1,22 @@
-{-# LANGUAGE TemplateHaskell #-}
-module Lib
-    ( nextMove
-    , circularSnake
-    , collision
-    , Direction
-    , Coord
-    , Apple
-    , Snake
-    , Limit
-    ) where
-
-import           Control.Lens
+module Lib where
 
 -- | Snake's possible direction
 data Direction = DirUp | DirRight | DirDown | DirLeft
                  deriving (Eq, Show)
 
 -- | Entities have coordinates
-data Coord = Coord Int Int deriving (Eq, Show)
+data Coord = Coord Float Float deriving (Eq, Show)
 
 -- | Apple
-data Apple = Apple { _coorda :: Coord }
+data Apple = Apple Coord
              deriving (Eq, Show)
 
 -- | Snake eats apple
-data Snake = Snake { _direction :: Direction, _coords :: Coord }
+data Snake = Snake Direction Coord
              deriving (Eq, Show)
 
-makeLenses ''Apple
-makeLenses ''Snake
-
 -- | World has limits
-data Limit = Limit Int Int
+data Limit = Limit Float Float
 
 -- | From a direction and a set of coordinates, compute the next possible
 -- coordinates
