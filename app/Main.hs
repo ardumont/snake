@@ -1,5 +1,6 @@
 module Main where
 
+import           Graphics.Gloss.Game ()
 import           Lib
 
 width :: Int
