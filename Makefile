@@ -7,7 +7,13 @@ build:
 all: build run
 
 spec:
-	stack test
+	cabal test
+
+sbx-init:
+	cabal sandbox init
+
+sbx-delete:
+	cabal sandbox delete
 
 to-nix:
 	cabal2nix --shell . > shell.nix
