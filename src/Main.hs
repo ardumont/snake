@@ -31,12 +31,12 @@ circularSnakeWorld _ (World (Snake dir coord) apple limit) =
 
 -- | Compute the apple's next position
 nextApplePosition :: Apple -> Apple
-nextApplePosition (Apple (Coord x y)) = (Apple $ Coord (x+10) (y+10))
+nextApplePosition (Apple (Coord x y)) = Apple $ Coord (x+10) (y+10)
 
 -- | Snake eats apple
 snakeEatsApple :: t -> World -> World
 snakeEatsApple _ world@(World snake apple limit) =
-  if (collision snake apple)
+  if snake `collision` apple
   then (World snake (nextApplePosition apple) limit)
   else world
 
