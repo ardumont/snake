@@ -15,31 +15,6 @@ applePix = bmp "resources/apple.bmp"
 snakePix :: Picture
 snakePix = bmp "resources/snake.bmp"
 
-data World = World Snake Apple Limit
-
--- | Snake moves in the world
-nextMoveWorld :: t -> World -> World
-nextMoveWorld _ (World (Snake dir coord) apple limit) =
-  World updatedSnake apple limit
-  where updatedSnake = Snake dir (nextMove dir coord)
-
--- | Snake runs forever and cycle around the world
-circularSnakeWorld :: t -> World -> World
-circularSnakeWorld _ (World (Snake dir coord) apple limit) =
-  World updatedSnake apple limit
-  where updatedSnake = Snake dir (circularSnake coord limit)
-
--- | Compute the apple's next position
-nextApplePosition :: Apple -> Apple
-nextApplePosition (Apple (Coord x y)) = Apple $ Coord (x+10) (y+10)
-
--- | Snake eats apple
-snakeEatsApple :: t -> World -> World
-snakeEatsApple _ world@(World snake apple limit) =
-  if snake `collision` apple
-  then (World snake (nextApplePosition apple) limit)
-  else world
-
 -- play
 --   :: Display
 --      -> Color
@@ -63,7 +38,7 @@ main = play (InWindow "Snake" (w, h) (0, 0)) -- Window display
             ]
        where snake = Snake DirRight (Coord 0 0)  -- FIXME randomly set the snake's direction + initial position
              apple = Apple (Coord 100 100)       -- FIXME random set the apple's position
-             world = World snake apple (Limit width height)
+             world = World snake apple (width, height)
              w = round width
              h = round height
 
