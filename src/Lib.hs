@@ -12,12 +12,14 @@ data Coord = Coord {_x :: Float,
                     _y :: Float} deriving (Eq, Show)
 
 -- | Apple
-data Apple = Apple { _ca :: Coord }
+data Apple = Apple { _ca :: Coord,  -- coordinate apple
+                     _ra :: Float } -- radius apple
              deriving (Eq, Show)
 
 -- | Snake eats apple'
-data Snake = Snake { _dir :: Direction,
-                     _cs  :: Coord }
+data Snake = Snake { _dir :: Direction, -- direction snake
+                     _cs  :: Coord,     -- coordinate snake
+                     _rs  :: Float }    -- radius snake
              deriving (Eq, Show)
 
 -- | World has limits
@@ -52,9 +54,13 @@ circularSnake (Coord x y) (w, h) =
        (_, _, _, True)  -> Coord x 0
        _                -> Coord x y
 
+-- | square function (find existing one)
+sq x = x * x
+
 -- | Given two sets of coordinates, determine if there is a collide or not
-collide :: Coord -> Coord -> Bool
-collide = (==)
+collide :: Snake -> Apple -> Bool
+collide (Snake _ (Coord xs ys) rs) (Apple (Coord xa ya) ra) =
+  sq (xa - xs) + sq (ya - ys) <= sq rs + sq ra
 
 -- | From random int to dir'
 toDirection :: (Eq a, Num a) => a -> Direction
@@ -75,18 +81,18 @@ nextApplePositionPolicy =  ca `over` translatePos
 -- | Snake eats apple'
 snakeEatsApple :: t -> World -> World
 snakeEatsApple _ world =
-  if (world ^. snake . cs) `collide` (world ^. apple . ca)
+  if (world ^. snake) `collide` (world ^. apple)
      then apple `over` nextApplePositionPolicy $ world
      else world
 
 -- | Snake moves in the world
 nextMoveWorld :: t -> World -> World
-nextMoveWorld _ (World (Snake dir' coord') apple' limit') =
+nextMoveWorld _ (World (Snake dir' coord' r') apple' limit') =
   World updatedSnake apple' limit'
-  where updatedSnake = Snake dir' (nextMove dir' coord')
+  where updatedSnake = Snake dir' (nextMove dir' coord') r'
 
 -- | Snake runs forever and cycle around the world
 circularSnakeWorld :: t -> World -> World
-circularSnakeWorld _ (World (Snake dir' coord) apple' limit') =
+circularSnakeWorld _ (World (Snake dir' coord r) apple' limit') =
   World updatedSnake apple' limit'
-  where updatedSnake = Snake dir' (circularSnake coord limit')
+  where updatedSnake = Snake dir' (circularSnake coord limit') r
