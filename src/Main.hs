@@ -9,8 +9,18 @@ width = 1000
 height :: Float
 height = 1000
 
+imageSide :: Float
+imageSide = 104.0
+
+scaleRatio :: Float
+scaleRatio = 0.1
+
+-- image used is a square 104x104
+-- circle inside the square so to have the radius: sqrt (104*104 + 104*104)
 radius :: Float
-radius = 10
+radius = sqrt (sq_side + sq_side) * scaleRatio
+  where sq x = x * x
+        sq_side = sq imageSide
 
 applePix :: Picture
 applePix = bmp "resources/apple.bmp"
@@ -47,7 +57,8 @@ main = play (InWindow "Snake" (w, h) (0, 0)) -- Window display
 
 -- | Draw the pix at coordinates
 drawCoordinates :: Coord -> Picture -> Picture
-drawCoordinates (Coord x y) pix = translate x y (scale 0.25 0.25 pix)
+drawCoordinates (Coord x y) pix =
+  translate x y (scale scaleRatio scaleRatio pix)
 
 -- | Draw the world
 drawWorld :: World -> Picture
